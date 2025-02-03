@@ -1,0 +1,42 @@
+name: Auto Sync Terraform Outputs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform-sync:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+      DYNAMODB_TABLE: ${{ secrets.DYNAMODB_TABLE }}
+      GITHUB_TOKEN: ${{ secrets.PAT_FOR_WORKFLOW }}
+      TARGET_GITHUB_REPO: ${{ secrets.TARGET_GITHUB_REPO }}
+    defaults:
+      run:
+        working-directory: environments/dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.5.5"
+
+      - name: Initialize Terraform
+        run: terraform init -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" -backend-config="key=environments/dev/terraform.tfstate" -backend-config="region=${{ env.AWS_REGION }}" -backend-config="dynamodb_table=${{ env.DYNAMODB_TABLE }}"
+
+      - name: Apply Terraform configuration
+        run: terraform apply -auto-approve
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install gh -y
+
+      - name: Sync GitHub Secrets
+        run: ../../sync_github_secrets.sh ${{ env.TARGET_GITHUB_REPO }}

@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "your-tf-state-bucket"
+    bucket         = "my-tf-state-bootstrap"
     key            = "environments/dev/terraform.tfstate"
     region         = "eu-west-2"
     dynamodb_table = "terraform-locks"
@@ -21,7 +21,7 @@ module "ecr" {
 module "secrets" {
   source             = "../../modules/secrets"
   secret_name        = "github-actions/ecr-credentials-dev"
-  access_key_id      = module.iam.this.access_key_id
-  secret_access_key  = module.iam.this.secret_access_key
-  ecr_repo_url       = module.ecr.this.repository_url
+  access_key_id      = module.iam.access_key_id
+  secret_access_key  = module.iam.secret_access_key
+  ecr_repo_url       = module.ecr.repository_url
 }
