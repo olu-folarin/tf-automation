@@ -14,8 +14,11 @@ export TF_CLI_ARGS="-no-color"
 echo "Extracting Terraform outputs..."
 TF_OUTPUT=$(terraform output -json)
 
-# Option 2: Remove ANSI escape sequences (if any) from the output
+# Remove ANSI escape sequences (if any) from the output
 TF_OUTPUT=$(echo "$TF_OUTPUT" | sed -E 's/\x1B\[[0-9;]*[mK]//g')
+
+# Remove UTF-8 BOM if present
+TF_OUTPUT="${TF_OUTPUT#$'\xef\xbb\xbf'}"
 
 # If extra (non-JSON) text exists before the JSON starts, remove it.
 if [[ "$TF_OUTPUT" != "{"* ]]; then
@@ -37,6 +40,9 @@ fi
 
 if ! echo "$TF_OUTPUT" | jq empty >/dev/null 2>&1; then
   echo "Error: Terraform output is not valid JSON."
+  # Optionally, print a hex dump to help debug hidden characters
+  echo "Debug (hex dump):"
+  echo "$TF_OUTPUT" | od -c
   exit 1
 fi
 
