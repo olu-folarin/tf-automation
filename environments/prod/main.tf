@@ -25,3 +25,17 @@ module "secrets" {
   secret_access_key  = module.iam.secret_access_key
   ecr_repo_url       = module.ecr.repository_url
 }
+
+data "aws_caller_identity" "current" {}
+
+output "aws_account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
+
+output "secret_arn" {
+  value = module.secrets.secret_arn
+}
+
+output "repository_url" {
+  value = module.ecr.repository_url
+}
