@@ -28,16 +28,15 @@ fi
 # Trim any carriage returns and extra whitespace
 TF_OUTPUT=$(echo "$TF_OUTPUT" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-# Debug output: length and raw output
+# Debug output: length and raw JSON
 echo "TF_OUTPUT length: ${#TF_OUTPUT}"
 echo "Raw Terraform outputs:"
 echo "$TF_OUTPUT"
 
 # ------------------------------------------------------
-# Extract the valid JSON portion from any appended logs
-# We use a Python snippet to grab the first JSON object.
+# Extract the valid JSON portion from any appended logs using JSONDecoder.
 # ------------------------------------------------------
-VALID_JSON=$(python3 -c "import sys, re; content=sys.stdin.read(); m=re.search(r'(\{.*\})', content, re.DOTALL); print(m.group(1)) if m else sys.exit(1)" <<< "$TF_OUTPUT")
+VALID_JSON=$(python3 -c "import sys, json; data = sys.stdin.read(); obj, idx = json.JSONDecoder().raw_decode(data); print(json.dumps(obj))" <<< "$TF_OUTPUT")
 
 if [ -z "$VALID_JSON" ]; then
   echo "Error: Could not extract valid JSON from Terraform output."
