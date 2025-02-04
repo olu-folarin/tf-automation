@@ -11,6 +11,10 @@ TARGET_REPO="$1"
 echo "Extracting Terraform outputs..."
 TF_OUTPUT=$(terraform output -json)
 
+if [[ "$TF_OUTPUT" != "{"* ]]; then
+  TF_OUTPUT=$(echo "$TF_OUTPUT" | sed -n '/^{/,$p')
+fi
+
 # Debug output: length and raw JSON
 echo "TF_OUTPUT length: ${#TF_OUTPUT}"
 echo "Raw Terraform outputs:"
