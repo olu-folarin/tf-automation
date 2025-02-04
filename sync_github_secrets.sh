@@ -15,6 +15,8 @@ if [[ "$TF_OUTPUT" != "{"* ]]; then
   TF_OUTPUT=$(echo "$TF_OUTPUT" | sed -n '/^{/,$p')
 fi
 
+TF_OUTPUT=$(echo "$TF_OUTPUT" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
 # Debug output: length and raw JSON
 echo "TF_OUTPUT length: ${#TF_OUTPUT}"
 echo "Raw Terraform outputs:"
