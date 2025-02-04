@@ -27,3 +27,7 @@ resource "aws_secretsmanager_secret_version" "this" {
     ecr_repo_url      = var.ecr_repo_url
   })
 }
+
+output "secret_arn" {
+  value = aws_secretsmanager_secret.this.arn
+}
