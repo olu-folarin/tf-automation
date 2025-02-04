@@ -8,13 +8,21 @@ fi
 
 TARGET_REPO="$1"
 
+# Option 1: Disable colors by setting the TF_CLI_ARGS environment variable
+export TF_CLI_ARGS="-no-color"
+
 echo "Extracting Terraform outputs..."
 TF_OUTPUT=$(terraform output -json)
 
+# Option 2: Remove ANSI escape sequences (if any) from the output
+TF_OUTPUT=$(echo "$TF_OUTPUT" | sed -E 's/\x1B\[[0-9;]*[mK]//g')
+
+# If extra (non-JSON) text exists before the JSON starts, remove it.
 if [[ "$TF_OUTPUT" != "{"* ]]; then
   TF_OUTPUT=$(echo "$TF_OUTPUT" | sed -n '/^{/,$p')
 fi
 
+# Trim any carriage returns and extra whitespace
 TF_OUTPUT=$(echo "$TF_OUTPUT" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
 # Debug output: length and raw JSON
